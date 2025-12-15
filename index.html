@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A mindful pause before unlocking your phone">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Mindful Unlock">
+    <title>Mindful Unlock</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🔓 Mindful Unlock</h1>
+        
+        <div class="stats">
+            <div class="stat">Times opened today: <strong id="unlock-count">0</strong></div>
+            <div class="stat" id="last-unlock-text">No unlocks yet today</div>
+        </div>
+
+        <div class="quote" id="quote">
+            "What is something better you could do now with your precious time?"
+        </div>
+
+        <div id="countdown-display" class="countdown hidden"></div>
+
+        <button id="unlock-btn">Unlock</button>
+        <button id="cancel-btn" class="cancel hidden">Cancel</button>
+
+        <details class="setup-instructions">
+            <summary>📱 Setup Lock Screen Widget</summary>
+            <ol>
+                <li>Open the <strong>Shortcuts</strong> app on your iPhone</li>
+                <li>Tap <strong>+</strong> to create a new shortcut</li>
+                <li>Search for and add: <strong>Open URLs</strong></li>
+                <li>Enter this page's URL (copy from browser)</li>
+                <li>Tap the shortcut name and rename it to "Mindful Unlock"</li>
+                <li>Tap the <strong>⋯</strong> menu → <strong>Add to Home Screen</strong></li>
+                <li>Then: Long press lock screen → Customize → Add widget → Select your shortcut</li>
+            </ol>
+            <p><strong>Tip:</strong> Also tap "Add to Home Screen" in Safari for quick access!</p>
+        </details>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
