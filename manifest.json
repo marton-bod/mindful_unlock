@@ -2,7 +2,7 @@
   "name": "Mindful Unlock",
   "short_name": "Mindful",
   "description": "A mindful pause before unlocking your phone",
-  "start_url": "/",
+  "start_url": "/mindful_unlock/",
   "display": "standalone",
   "background_color": "#667eea",
   "theme_color": "#667eea",
