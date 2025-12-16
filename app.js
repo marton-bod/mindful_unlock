@@ -1,16 +1,15 @@
 const quotes = [
-    "What is something better you could do now with your precious time?",
-    "Are you aware why you're checking your phone now?",
-    "Is it truly important to check things again now?",
+    "What is something better you could do now?",
+    "Are you aware why you're checking your phone?",
+    "Is it truly important to check things again?",
     "Could you step outside and take a breath instead?",
     "What are you avoiding by reaching for your phone?",
     "Will this bring you closer to your goals today?",
     "Is this the most meaningful thing you could do right now?",
     "What would happen if you waited five more minutes?",
-    "Are you in control, or is your phone controlling you?",
     "What emotion are you feeling right now?",
     "Could you be present in this moment instead?",
-    "What if you chose connection over consumption?"
+    "What if you chose presence over mindless consumption?"
 ];
 
 let countdown = 0;
@@ -89,7 +88,7 @@ function displayRandomQuote() {
 
 // Start countdown
 function startCountdown() {
-    countdown = 15;
+    countdown = 20;
     unlockBtn.classList.add('hidden');
     cancelBtn.classList.remove('hidden');
     countdownDisplay.classList.remove('hidden');
