@@ -1,197 +1,200 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* -- basic utilities -- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+.hidden { display: none !important; } /* ensure show/hide works reliably */
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: white;
 }
 
 .container {
-    max-width: 420px;
-    width: 100%;
-    text-align: center;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
 }
 
 h1 {
-    font-size: 2.4rem;
-    margin-bottom: 1.5rem;
-    font-weight: 700;
+  font-size: 2.4rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
 }
 
-/* small stats card - unchanged mostly */
 .stats {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(10px);
-    border-radius: 18px;
-    padding: 1.25rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(10px);
+  border-radius: 18px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255,255,255,0.12);
 }
 
 .stat {
-    margin: 0.4rem 0;
-    font-size: 0.98rem;
-    opacity: 0.95;
+  margin: 0.4rem 0;
+  font-size: 0.98rem;
+  opacity: 0.95;
 }
 
-/* QUOTE: larger, more airy, subtle glow + float animation to draw attention */
+/* -------- QUOTE (emphasized) --------
+   - larger font
+   - more vertical presence
+   - float animation
+   - crossfade for text changes
+   - soft glow pulse periodically
+   - breathing scale only while countdown runs
+*/
 .quote {
-    background: rgba(255, 255, 255, 0.18);
-    backdrop-filter: blur(10px);
-    border-radius: 22px;
-    padding: 2.2rem 1.4rem;
-    margin-bottom: 1.6rem;
-    font-style: italic;
-    font-size: 1.35rem;
-    line-height: 1.7;
-    min-height: 220px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.03);
-    transition: transform 300ms ease, box-shadow 300ms ease;
-    transform: scale(1.02);
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  border-radius: 22px;
+  padding: 2.2rem 1.4rem;
+  margin-bottom: 1.6rem;
+  font-style: italic;
+  font-size: 1.4rem;       /* increased font size */
+  line-height: 1.7;        /* taller for readability */
+  min-height: 220px;       /* larger vertical presence */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255,255,255,0.18);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.03);
+  transition: transform 300ms ease, box-shadow 300ms ease;
+  position: relative;
+  overflow: hidden;
 }
 
-/* inner quote text animates slowly */
+/* inner text element that we animate */
 .quote .quote-text {
-    display: inline-block;
-    padding: 0 6px;
-    transform-origin: center;
-    animation: float 6s ease-in-out infinite;
+  display: inline-block;
+  padding: 0 6px;
+  transform-origin: center;
+  will-change: transform, opacity;
+  transition: opacity 360ms cubic-bezier(.2,.9,.3,1), transform 360ms cubic-bezier(.2,.9,.3,1);
+  opacity: 1;
 }
 
-/* small pop when new quote appears */
-.quote .pop {
-    animation: pop 360ms cubic-bezier(.2,.9,.3,1);
+/* fade-out helper (applied before swapping text) */
+.quote .quote-text.fading {
+  opacity: 0;
+  transform: translateY(8px) scale(0.995);
 }
 
-/* button and countdown unchanged */
-.countdown {
-    font-size: 3rem;
-    font-weight: 700;
-    margin: 1.6rem 0;
-    animation: pulse 1s ease-in-out infinite;
+/* pop effect when new quote appears */
+.quote .quote-text.pop {
+  animation: pop 360ms cubic-bezier(.2,.9,.3,1);
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.85; transform: scale(1.02); }
+/* subtle idle float to draw attention */
+.quote .quote-text.float {
+  animation: float 6s ease-in-out infinite;
 }
 
+/* breathing animation used only when countdown is active */
+.quote.breathing {
+  animation: breathe-global 3.5s ease-in-out infinite;
+}
+
+/* soft glow pulse (box-shadow) applied briefly */
+.quote.glow {
+  box-shadow: 0 12px 48px rgba(0,0,0,0.28), 0 0 40px rgba(255,255,255,0.06);
+  transform: translateY(-6px) scale(1.01);
+}
+
+/* small keyframes */
 @keyframes float {
-    0% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-    100% { transform: translateY(0); }
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
 }
 
 @keyframes pop {
-    0% { transform: scale(0.96) translateY(6px); opacity: 0; }
-    60% { transform: scale(1.03) translateY(-2px); opacity: 1; }
-    100% { transform: scale(1) translateY(0); opacity: 1; }
+  0% { transform: scale(0.96) translateY(6px); opacity: 0; }
+  60% { transform: scale(1.03) translateY(-2px); opacity: 1; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes breathe-global {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.015); }
+  100% { transform: scale(1); }
+}
+
+/* countdown, buttons, other UI (mostly unchanged) */
+.countdown {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 1.6rem 0;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.02); }
 }
 
 button {
-    background: white;
-    color: #667eea;
-    border: none;
-    padding: 1.05rem 2.2rem;
-    font-size: 1.15rem;
-    font-weight: 600;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
-    width: 100%;
-    max-width: 300px;
+  background: white;
+  color: #667eea;
+  border: none;
+  padding: 1.05rem 2.2rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.18);
+  width: 100%;
+  max-width: 300px;
 }
 
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
-}
+button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.28); }
+button:active { transform: translateY(0); }
 
-button:active {
-    transform: translateY(0);
-}
+button.cancel { background: #ef4444; color: white; margin-top: 1rem; }
 
-button.cancel {
-    background: #ef4444;
-    color: white;
-    margin-top: 1rem;
-}
-
-/* setup instructions: smaller, lighter, less visual weight; kept at bottom of container */
+/* setup instructions small and tucked */
 .setup-instructions {
-    background: rgba(255, 255, 255, 0.06);
-    backdrop-filter: blur(8px);
-    border-radius: 12px;
-    padding: 0.85rem;
-    margin-top: 1.6rem;
-    text-align: left;
-    font-size: 0.82rem;
-    line-height: 1.45;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 0.85rem;
+  margin-top: 1.6rem;
+  text-align: left;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  border: 1px solid rgba(255,255,255,0.08);
 }
 
-/* summary styling made more compact */
 .setup-instructions summary {
-    cursor: pointer;
-    font-weight: 600;
-    text-align: center;
-    margin-bottom: 0.5rem;
-    list-style: none;
-    font-size: 0.9rem;
-    padding: 0.3rem 0;
+  cursor: pointer;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  list-style: none;
+  font-size: 0.9rem;
+  padding: 0.3rem 0;
 }
 
-/* hide default marker */
-.setup-instructions summary::-webkit-details-marker {
-    display: none;
-}
-
-.setup-instructions ol {
-    padding-left: 1.2rem;
-    margin-bottom: 0.5rem;
-}
-
-.setup-instructions li {
-    margin: 0.35rem 0;
-}
-
-/* smaller tip text */
-.setup-instructions p {
-    margin-top: 0.6rem;
-    font-size: 0.78rem;
-    opacity: 0.92;
-    text-align: center;
-}
-
-/* utility: hide elements when .hidden is applied */
-.hidden {
-  display: none !important;
-}
+.setup-instructions summary::-webkit-details-marker { display: none; }
+.setup-instructions ol { padding-left: 1.2rem; margin-bottom: 0.5rem; }
+.setup-instructions li { margin: 0.35rem 0; }
+.setup-instructions p { margin-top: 0.6rem; font-size: 0.78rem; opacity: 0.92; text-align: center; }
 
 /* accessibility: respect reduced motion */
 @media (prefers-reduced-motion: reduce) {
-    .quote .quote-text { animation: none; }
-    .quote .pop { animation: none; }
-    .countdown { animation: none; }
+  .quote .quote-text { animation: none !important; transition: none !important; }
+  .quote.breathing { animation: none !important; }
+  .quote.glow { transform: none !important; box-shadow: none !important; }
+  .countdown { animation: none !important; }
 }
 
-/* iOS-specific adjustments */
+/* iOS specific */
 @supports (-webkit-touch-callout: none) {
-    body {
-        min-height: -webkit-fill-available;
-    }
+  body { min-height: -webkit-fill-available; }
 }
