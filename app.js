@@ -12,13 +12,13 @@ const quotes = [
   "What if you chose presence over mindless consumption?"
 ];
 
-let countdown = 0;
-let countdownInterval = null;
+// --- interval / timer handles (top-level) ---
+let quoteInterval = null;
 let glowInterval = null;
-let quoteChangeInterval = null;
-const QUOTE_ROTATE_MS = 10000;
+let countdownInterval = null;
+let countdownTarget = 0; // timestamp ms for robust countdown
 
-// DOM elements
+// DOM elements (guarded)
 const unlockBtn = document.getElementById('unlock-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const countdownDisplay = document.getElementById('countdown-display');
@@ -26,15 +26,32 @@ const unlockCountEl = document.getElementById('unlock-count');
 const lastUnlockText = document.getElementById('last-unlock-text');
 const quoteEl = document.getElementById('quote');
 
-// Initialize on load
-function init() {
-  checkAndResetDaily();
-  updateDisplay();
-  displayRandomQuote(true);
-  startGlowCycle(); // start periodic glow
+if (!quoteEl) {
+  console.error('quote element not found (id="quote") — check HTML');
 }
 
-// Check if we need to reset daily counter
+// --- Initialization ---
+function init() {
+  console.log('init');
+  checkAndResetDaily();
+  updateDisplay();
+  // show an initial quote immediately (no pop on first load)
+  displayRandomQuote(true);
+
+  // start background behaviors only if visible
+  if (document.visibilityState === 'visible') {
+    startQuoteRotation(true); // immediate + periodic
+    startGlowCycle();
+  }
+
+  // set up visibility handling
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  // cleanup on unload
+  window.addEventListener('beforeunload', cleanupAll);
+}
+
+// --- daily counter storage ---
 function checkAndResetDaily() {
   const today = new Date().toDateString();
   const lastReset = localStorage.getItem('lastResetDate');
@@ -45,7 +62,6 @@ function checkAndResetDaily() {
   }
 }
 
-// Update display with current data
 function updateDisplay() {
   const count = parseInt(localStorage.getItem('unlockCount') || '0');
   const lastUnlockStr = localStorage.getItem('lastUnlock');
@@ -61,106 +77,72 @@ function updateDisplay() {
   }
 }
 
-// Calculate time ago
 function getTimeAgo(date) {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) 
-    return `${seconds} sec`;
+  if (seconds < 60) return `${seconds} sec`;
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) 
-    return `${minutes} min`;
+  if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) 
-    return `${hours} hr`;
+  if (hours < 24) return `${hours} hr`;
   const days = Math.floor(hours / 24);
   return `${days} day${days > 1 ? 's' : ''}`;
 }
 
-// Display random quote with crossfade + pop
+// --- Quote rotation & animations ---
+// displayRandomQuote handles crossfade + pop; `isInitial` suppresses pop
 function displayRandomQuote(isInitial = false) {
+  if (!quoteEl) return;
   const lastQuote = localStorage.getItem('lastQuote');
   let quote;
-
   do {
     quote = quotes[Math.floor(Math.random() * quotes.length)];
   } while (quote === lastQuote && quotes.length > 1);
 
   localStorage.setItem('lastQuote', quote);
 
-  // If there's already a span, fade it out first (for non-initial)
   const existing = quoteEl.querySelector('.quote-text');
 
-  // Create new span ahead of time for better crossfade
   const newSpan = document.createElement('span');
   newSpan.className = 'quote-text';
   newSpan.textContent = `"${quote}"`;
-
-  // Give the new span the float behavior
-  newSpan.classList.add('float');
+  newSpan.classList.add('float'); // idle float
 
   if (!existing || isInitial) {
-    // first load or no existing: just insert
     quoteEl.innerHTML = '';
     quoteEl.appendChild(newSpan);
-    if (!isInitial) {
-      // small pop for non-initial replacements
-      forcePop(newSpan);
-    }
+    if (!isInitial) forcePop(newSpan);
     return;
   }
 
-  // fade out existing, then swap
+  // crossfade: fade out existing, then replace
   existing.classList.add('fading');
 
-  // after fade duration, swap content
   setTimeout(() => {
-    // remove existing and add new span (initially transparent because of transition)
-    quoteEl.removeChild(existing);
+    // remove old and insert new
+    if (quoteEl.contains(existing)) quoteEl.removeChild(existing);
     quoteEl.appendChild(newSpan);
-
-    // trigger pop
     forcePop(newSpan);
-  }, 360); // match CSS transition duration
+  }, 380); // matches CSS transition (360ms + buffer)
 }
 
-// helper to trigger pop animation safely
 function forcePop(span) {
-  // ensure reflow then add pop
+  // reflow then add pop for animation
   void span.offsetWidth;
   span.classList.add('pop');
-
-  // remove pop after animation
-  setTimeout(() => span.classList.remove('pop'), 450);
+  setTimeout(() => span.classList.remove('pop'), 500);
 }
 
-// Start periodic glow effect (soft) every ~12s
-function startGlowCycle() {
-  // do nothing for users who prefer reduced motion
-  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if (mq && mq.matches) return;
-
-  // initial scheduled glow after a few seconds
-  glowInterval = setInterval(() => {
-    // briefly add glow class
-    quoteEl.classList.add('glow');
-    setTimeout(() => quoteEl.classList.remove('glow'), 900);
-  }, 12000);
-
-  // fire first glow after small delay to draw attention on entry
-  setTimeout(() => {
-    quoteEl.classList.add('glow');
-    setTimeout(() => quoteEl.classList.remove('glow'), 900);
-  }, 1600);
-}
+// --- controlled quote rotation (start/stop) ---
+const QUOTE_ROTATE_MS = 10000; // 10s
 
 function startQuoteRotation(immediate = true) {
-  // don't start if already running
-  if (quoteInterval !== null) return;
-
-  // optionally show a quote immediately
+  if (!quoteEl) return;
+  if (quoteInterval !== null) {
+    // already running
+    return;
+  }
+  console.log('startQuoteRotation');
   if (immediate) displayRandomQuote(false);
-
-  // create the interval and store its id so we can clear it later
   quoteInterval = setInterval(() => {
     displayRandomQuote();
   }, QUOTE_ROTATE_MS);
@@ -168,24 +150,54 @@ function startQuoteRotation(immediate = true) {
 
 function stopQuoteRotation() {
   if (quoteInterval !== null) {
+    console.log('stopQuoteRotation');
     clearInterval(quoteInterval);
     quoteInterval = null;
   }
 }
 
-// Start countdown — robust, uses target time
+// --- glow cycle (soft box-shadow) ---
+function startGlowCycle() {
+  if (!quoteEl) return;
+  if (glowInterval !== null) return;
+  // respect reduced motion
+  const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+  if (mq && mq.matches) return;
+
+  console.log('startGlowCycle');
+  // first delayed glow to draw attention shortly after load
+  setTimeout(() => {
+    quoteEl.classList.add('glow');
+    setTimeout(() => quoteEl.classList.remove('glow'), 900);
+  }, 1200);
+
+  glowInterval = setInterval(() => {
+    quoteEl.classList.add('glow');
+    setTimeout(() => quoteEl.classList.remove('glow'), 900);
+  }, 12000);
+}
+
+function stopGlowCycle() {
+  if (glowInterval !== null) {
+    console.log('stopGlowCycle');
+    clearInterval(glowInterval);
+    glowInterval = null;
+    quoteEl && quoteEl.classList.remove('glow');
+  }
+}
+
+// --- countdown (robust: use target time) ---
 function startCountdown() {
   const DURATION_SECONDS = 20;
-  // clear any previous interval just in case
+  // clear any prior count
   if (countdownInterval) {
     clearInterval(countdownInterval);
     countdownInterval = null;
   }
 
-  // compute target timestamp
   countdownTarget = Date.now() + DURATION_SECONDS * 1000;
 
-  // UI: show/hide proper elements
+  // UI toggles
   unlockBtn.classList.add('hidden');
   unlockBtn.setAttribute('aria-hidden', 'true');
 
@@ -195,19 +207,16 @@ function startCountdown() {
   countdownDisplay.classList.remove('hidden');
   countdownDisplay.removeAttribute('aria-hidden');
 
-  // initial render
+  // add breathing to quote only while counting
+  quoteEl && quoteEl.classList.add('breathing');
+
+  // fast-enough tick for accuracy, not too wasteful
+  countdownInterval = setInterval(() => updateCountdownDisplay(), 250);
+
+  // immediate update
   updateCountdownDisplay();
-
-  // add breathing to quote while counting down
-  quoteEl.classList.add('breathing');
-
-  // run a fairly responsive interval; using 250ms keeps UI smooth and accurate
-  countdownInterval = setInterval(() => {
-    updateCountdownDisplay();
-  }, 250);
 }
 
-// helper that computes remaining seconds and updates UI
 function updateCountdownDisplay() {
   const remainingMs = countdownTarget - Date.now();
   const remainingSec = Math.ceil(remainingMs / 1000);
@@ -215,27 +224,22 @@ function updateCountdownDisplay() {
   if (remainingSec > 0) {
     countdownDisplay.textContent = `Unlocking in ${remainingSec}...`;
   } else {
-    // stop interval and finish
+    // finish
     if (countdownInterval) {
       clearInterval(countdownInterval);
       countdownInterval = null;
     }
-    // call finishUnlock to handle completion flow
     finishUnlock();
   }
 }
 
-// Cancel countdown
 function cancelCountdown() {
   if (countdownInterval) {
     clearInterval(countdownInterval);
     countdownInterval = null;
   }
-
-  // reset target
   countdownTarget = 0;
 
-  // restore UI
   unlockBtn.classList.remove('hidden');
   unlockBtn.removeAttribute('aria-hidden');
 
@@ -246,10 +250,10 @@ function cancelCountdown() {
   countdownDisplay.setAttribute('aria-hidden', 'true');
 
   // remove breathing
-  quoteEl.classList.remove('breathing');
+  quoteEl && quoteEl.classList.remove('breathing');
 }
 
-// Finish unlock
+// finishUnlock updates counts, shows a brief message, and resets UI
 function finishUnlock() {
   const newCount = parseInt(localStorage.getItem('unlockCount') || '0') + 1;
   const now = new Date();
@@ -258,19 +262,21 @@ function finishUnlock() {
   localStorage.setItem('lastUnlock', now.toISOString());
 
   updateDisplay();
+
+  // swap to a new quote on finish
   displayRandomQuote();
 
-  // Reset UI
+  // reset UI
   unlockBtn.classList.remove('hidden');
   unlockBtn.removeAttribute('aria-hidden');
 
   cancelBtn.classList.add('hidden');
   cancelBtn.setAttribute('aria-hidden', 'true');
 
-  // remove breathing when finished
-  quoteEl.classList.remove('breathing');
+  // remove breathing
+  quoteEl && quoteEl.classList.remove('breathing');
 
-  // Show completion message briefly
+  // show completion
   countdownDisplay.textContent = '✓ Unlocked';
   countdownDisplay.classList.remove('hidden');
   countdownDisplay.removeAttribute('aria-hidden');
@@ -281,40 +287,38 @@ function finishUnlock() {
   }, 2000);
 }
 
-// Event listeners
-unlockBtn.addEventListener('click', startCountdown);
-cancelBtn.addEventListener('click', cancelCountdown);
-
-// visibility handler: update UI immediately, and start/stop rotation
-document.addEventListener('visibilitychange', () => {
+// --- visibility handling ---
+function handleVisibilityChange() {
   if (document.visibilityState === 'visible') {
+    console.log('visibility: visible');
     updateDisplay();
-    startQuoteRotation(true); // immediate change + start periodic interval
+    startQuoteRotation(true);
+    startGlowCycle();
   } else {
-    // page hidden -> pause rotation to save CPU/battery
+    console.log('visibility: hidden');
+    // stop periodic tasks while not visible
     stopQuoteRotation();
+    stopGlowCycle();
   }
-});
-
-// start rotation on initial load if the page is visible already
-if (document.visibilityState === 'visible') {
-  startQuoteRotation(true);
 }
 
-// Clean up on unload
-window.addEventListener('beforeunload', () => {
-  if (glowInterval) clearInterval(glowInterval);
-  if (countdownInterval) clearInterval(countdownInterval);
+// --- cleanup helpers ---
+function cleanupAll() {
+  if (quoteInterval) { clearInterval(quoteInterval); quoteInterval = null; }
+  if (glowInterval) { clearInterval(glowInterval); glowInterval = null; }
+  if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+  // remove breathing/glow classes defensively
+  quoteEl && quoteEl.classList.remove('breathing', 'glow');
+}
+
+// --- event listeners ---
+unlockBtn && unlockBtn.addEventListener('click', startCountdown);
+cancelBtn && cancelBtn.addEventListener('click', cancelCountdown);
+
+// update last opened info when the PWA becomes visible
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') updateDisplay();
 });
 
-// Initialize app
+// initialize
 init();
-
-// Register service worker for offline support
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('service-worker.js')
-      .then(registration => console.log('SW registered'))
-      .catch(err => console.log('SW registration failed'));
-  });
-}
