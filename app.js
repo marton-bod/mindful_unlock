@@ -267,6 +267,10 @@ cancelBtn.addEventListener('click', cancelCountdown);
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     updateDisplay();
+    // change quote peridocially
+    setInterval(() => {
+        displayRandomQuote()
+    }, 10000);
   }
 });
 
