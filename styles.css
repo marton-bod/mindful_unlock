@@ -51,15 +51,16 @@ h1 {
     padding: 2.2rem 1.4rem;
     margin-bottom: 1.6rem;
     font-style: italic;
-    font-size: 1.18rem;
-    line-height: 1.6;
-    min-height: 180px;
+    font-size: 1.35rem;
+    line-height: 1.7;
+    min-height: 220px;
     display: flex;
     align-items: center;
     justify-content: center;
     border: 1px solid rgba(255, 255, 255, 0.18);
     box-shadow: 0 8px 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.03);
     transition: transform 300ms ease, box-shadow 300ms ease;
+    transform: scale(1.02);
 }
 
 /* inner quote text animates slowly */
@@ -90,7 +91,7 @@ h1 {
 
 @keyframes float {
     0% { transform: translateY(0); }
-    50% { transform: translateY(-6px); }
+    50% { transform: translateY(-10px); }
     100% { transform: translateY(0); }
 }
 
@@ -174,6 +175,11 @@ button.cancel {
     font-size: 0.78rem;
     opacity: 0.92;
     text-align: center;
+}
+
+/* utility: hide elements when .hidden is applied */
+.hidden {
+  display: none !important;
 }
 
 /* accessibility: respect reduced motion */
