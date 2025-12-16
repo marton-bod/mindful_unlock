@@ -27,14 +27,14 @@ const quoteEl = document.getElementById('quote');
 function init() {
     checkAndResetDaily();
     updateDisplay();
-    displayRandomQuote();
+    displayRandomQuote(true);
 }
 
 // Check if we need to reset daily counter
 function checkAndResetDaily() {
     const today = new Date().toDateString();
     const lastReset = localStorage.getItem('lastResetDate');
-    
+
     if (lastReset !== today) {
         localStorage.setItem('unlockCount', '0');
         localStorage.setItem('lastResetDate', today);
@@ -45,9 +45,9 @@ function checkAndResetDaily() {
 function updateDisplay() {
     const count = parseInt(localStorage.getItem('unlockCount') || '0');
     const lastUnlockStr = localStorage.getItem('lastUnlock');
-    
+
     unlockCountEl.textContent = count;
-    
+
     if (lastUnlockStr) {
         const lastUnlock = new Date(lastUnlockStr);
         const timeAgo = getTimeAgo(lastUnlock);
@@ -60,30 +60,48 @@ function updateDisplay() {
 // Calculate time ago
 function getTimeAgo(date) {
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
-    
+
     if (seconds < 60) return `${seconds} sec`;
-    
+
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes} min`;
-    
+
     const hours = Math.floor(minutes / 60);
     if (hours < 24) return `${hours} hr`;
-    
+
     const days = Math.floor(hours / 24);
     return `${days} day${days > 1 ? 's' : ''}`;
 }
 
-// Display random quote
-function displayRandomQuote() {
+// Display random quote with animation
+function displayRandomQuote(isInitial = false) {
     const lastQuote = localStorage.getItem('lastQuote');
     let quote;
-    
+
     do {
         quote = quotes[Math.floor(Math.random() * quotes.length)];
     } while (quote === lastQuote && quotes.length > 1);
-    
+
     localStorage.setItem('lastQuote', quote);
-    quoteEl.textContent = `"${quote}"`;
+
+    // wrap in span so we can animate inner text
+    const textSpan = document.createElement('span');
+    textSpan.className = 'quote-text';
+    textSpan.textContent = `"${quote}"`;
+
+    // replace content
+    quoteEl.innerHTML = '';
+    quoteEl.appendChild(textSpan);
+
+    // if not initial load, pop the quote to attract attention
+    if (!isInitial) {
+        // force reflow then add pop class to retrigger animation
+        void textSpan.offsetWidth;
+        textSpan.classList.add('pop');
+
+        // remove pop class after animation so it can fire again later
+        setTimeout(() => textSpan.classList.remove('pop'), 450);
+    }
 }
 
 // Start countdown
@@ -93,10 +111,10 @@ function startCountdown() {
     cancelBtn.classList.remove('hidden');
     countdownDisplay.classList.remove('hidden');
     countdownDisplay.textContent = `Unlocking in ${countdown}...`;
-    
+
     countdownInterval = setInterval(() => {
         countdown--;
-        
+
         if (countdown > 0) {
             countdownDisplay.textContent = `Unlocking in ${countdown}...`;
         } else {
@@ -119,22 +137,21 @@ function cancelCountdown() {
 function finishUnlock() {
     const newCount = parseInt(localStorage.getItem('unlockCount') || '0') + 1;
     const now = new Date();
-    
+
     localStorage.setItem('unlockCount', newCount.toString());
     localStorage.setItem('lastUnlock', now.toISOString());
-    
+
     updateDisplay();
     displayRandomQuote();
-    
+
     // Reset UI
     unlockBtn.classList.remove('hidden');
     cancelBtn.classList.add('hidden');
-    countdownDisplay.classList.add('hidden');
-    
+
     // Show completion message briefly
     countdownDisplay.textContent = '✓ Unlocked';
     countdownDisplay.classList.remove('hidden');
-    
+
     setTimeout(() => {
         countdownDisplay.classList.add('hidden');
     }, 2000);

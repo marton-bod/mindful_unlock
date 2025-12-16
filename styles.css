@@ -16,78 +16,108 @@ body {
 }
 
 .container {
-    max-width: 400px;
+    max-width: 420px;
     width: 100%;
     text-align: center;
 }
 
 h1 {
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
+    font-size: 2.4rem;
+    margin-bottom: 1.5rem;
     font-weight: 700;
 }
 
+/* small stats card - unchanged mostly */
 .stats {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
     backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 18px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .stat {
-    margin: 0.5rem 0;
-    font-size: 1rem;
+    margin: 0.4rem 0;
+    font-size: 0.98rem;
     opacity: 0.95;
 }
 
+/* QUOTE: larger, more airy, subtle glow + float animation to draw attention */
 .quote {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.18);
     backdrop-filter: blur(10px);
-    border-radius: 20px;
-    padding: 2rem;
-    margin-bottom: 2rem;
+    border-radius: 22px;
+    padding: 2.2rem 1.4rem;
+    margin-bottom: 1.6rem;
     font-style: italic;
-    font-size: 1.1rem;
+    font-size: 1.18rem;
     line-height: 1.6;
-    min-height: 120px;
+    min-height: 180px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.03);
+    transition: transform 300ms ease, box-shadow 300ms ease;
 }
 
+/* inner quote text animates slowly */
+.quote .quote-text {
+    display: inline-block;
+    padding: 0 6px;
+    transform-origin: center;
+    animation: float 6s ease-in-out infinite;
+}
+
+/* small pop when new quote appears */
+.quote .pop {
+    animation: pop 360ms cubic-bezier(.2,.9,.3,1);
+}
+
+/* button and countdown unchanged */
 .countdown {
     font-size: 3rem;
     font-weight: 700;
-    margin: 2rem 0;
+    margin: 1.6rem 0;
     animation: pulse 1s ease-in-out infinite;
 }
 
 @keyframes pulse {
     0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.8; transform: scale(1.05); }
+    50% { opacity: 0.85; transform: scale(1.02); }
+}
+
+@keyframes float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+    100% { transform: translateY(0); }
+}
+
+@keyframes pop {
+    0% { transform: scale(0.96) translateY(6px); opacity: 0; }
+    60% { transform: scale(1.03) translateY(-2px); opacity: 1; }
+    100% { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 button {
     background: white;
     color: #667eea;
     border: none;
-    padding: 1.2rem 3rem;
-    font-size: 1.3rem;
+    padding: 1.05rem 2.2rem;
+    font-size: 1.15rem;
     font-weight: 600;
     border-radius: 50px;
     cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.18);
     width: 100%;
     max-width: 300px;
 }
 
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.28);
 }
 
 button:active {
@@ -100,48 +130,57 @@ button.cancel {
     margin-top: 1rem;
 }
 
+/* setup instructions: smaller, lighter, less visual weight; kept at bottom of container */
 .setup-instructions {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    padding: 1.5rem;
-    margin-top: 2rem;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(8px);
+    border-radius: 12px;
+    padding: 0.85rem;
+    margin-top: 1.6rem;
     text-align: left;
-    font-size: 0.9rem;
-    line-height: 1.6;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+/* summary styling made more compact */
 .setup-instructions summary {
     cursor: pointer;
     font-weight: 600;
     text-align: center;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     list-style: none;
+    font-size: 0.9rem;
+    padding: 0.3rem 0;
 }
 
+/* hide default marker */
 .setup-instructions summary::-webkit-details-marker {
     display: none;
 }
 
 .setup-instructions ol {
-    padding-left: 1.5rem;
-    margin-bottom: 1rem;
+    padding-left: 1.2rem;
+    margin-bottom: 0.5rem;
 }
 
 .setup-instructions li {
-    margin: 0.5rem 0;
+    margin: 0.35rem 0;
 }
 
+/* smaller tip text */
 .setup-instructions p {
-    margin-top: 1rem;
-    font-size: 0.85rem;
-    opacity: 0.9;
+    margin-top: 0.6rem;
+    font-size: 0.78rem;
+    opacity: 0.92;
     text-align: center;
 }
 
-.hidden {
-    display: none;
+/* accessibility: respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .quote .quote-text { animation: none; }
+    .quote .pop { animation: none; }
+    .countdown { animation: none; }
 }
 
 /* iOS-specific adjustments */
