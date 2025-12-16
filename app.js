@@ -144,6 +144,13 @@ function finishUnlock() {
 unlockBtn.addEventListener('click', startCountdown);
 cancelBtn.addEventListener('click', cancelCountdown);
 
+// when the PWA is foregrounded, update the last unlock variable
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    updateDisplay();
+  }
+});
+
 // Initialize app
 init();
 
