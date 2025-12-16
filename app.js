@@ -12,11 +12,14 @@ const quotes = [
   "What if you chose presence over mindless consumption?"
 ];
 
-// --- interval / timer handles (top-level) ---
+// --- interval / timer handles ---
 let quoteInterval = null;
 let glowInterval = null;
 let countdownInterval = null;
-let countdownTarget = 0; // timestamp ms for robust countdown
+let countdownTarget = 0;
+
+// --- controlled quote rotation (start/stop) ---
+const QUOTE_ROTATE_MS = 10000;
 
 // DOM elements (guarded)
 const unlockBtn = document.getElementById('unlock-btn');
@@ -26,13 +29,7 @@ const unlockCountEl = document.getElementById('unlock-count');
 const lastUnlockText = document.getElementById('last-unlock-text');
 const quoteEl = document.getElementById('quote');
 
-if (!quoteEl) {
-  console.error('quote element not found (id="quote") — check HTML');
-}
-
-// --- Initialization ---
 function init() {
-  console.log('init');
   checkAndResetDaily();
   updateDisplay();
   // show an initial quote immediately (no pop on first load)
@@ -51,7 +48,6 @@ function init() {
   window.addEventListener('beforeunload', cleanupAll);
 }
 
-// --- daily counter storage ---
 function checkAndResetDaily() {
   const today = new Date().toDateString();
   const lastReset = localStorage.getItem('lastResetDate');
@@ -89,7 +85,6 @@ function getTimeAgo(date) {
 }
 
 // --- Quote rotation & animations ---
-// displayRandomQuote handles crossfade + pop; `isInitial` suppresses pop
 function displayRandomQuote(isInitial = false) {
   if (!quoteEl) return;
   const lastQuote = localStorage.getItem('lastQuote');
@@ -131,9 +126,6 @@ function forcePop(span) {
   span.classList.add('pop');
   setTimeout(() => span.classList.remove('pop'), 500);
 }
-
-// --- controlled quote rotation (start/stop) ---
-const QUOTE_ROTATE_MS = 10000; // 10s
 
 function startQuoteRotation(immediate = true) {
   if (!quoteEl) return;
@@ -222,7 +214,7 @@ function updateCountdownDisplay() {
   const remainingSec = Math.ceil(remainingMs / 1000);
 
   if (remainingSec > 0) {
-    countdownDisplay.textContent = `Unlocking in ${remainingSec}...`;
+    countdownDisplay.textContent = `${remainingSec}...`;
   } else {
     // finish
     if (countdownInterval) {
@@ -296,9 +288,7 @@ function handleVisibilityChange() {
     startGlowCycle();
   } else {
     console.log('visibility: hidden');
-    // stop periodic tasks while not visible
-    stopQuoteRotation();
-    stopGlowCycle();
+    cleanupAll()
   }
 }
 
@@ -317,7 +307,8 @@ cancelBtn && cancelBtn.addEventListener('click', cancelCountdown);
 
 // update last opened info when the PWA becomes visible
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') updateDisplay();
+  if (document.visibilityState === 'visible') 
+    updateDisplay();
 });
 
 // initialize
