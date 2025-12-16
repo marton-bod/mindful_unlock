@@ -89,7 +89,7 @@ function displayRandomQuote() {
 
 // Start countdown
 function startCountdown() {
-    countdown = 10;
+    countdown = 15;
     unlockBtn.classList.add('hidden');
     cancelBtn.classList.remove('hidden');
     countdownDisplay.classList.remove('hidden');
