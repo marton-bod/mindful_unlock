@@ -15,6 +15,8 @@ const quotes = [
 let countdown = 0;
 let countdownInterval = null;
 let glowInterval = null;
+let quoteChangeInterval = null;
+const QUOTE_ROTATE_MS = 10000;
 
 // DOM elements
 const unlockBtn = document.getElementById('unlock-btn');
@@ -151,6 +153,26 @@ function startGlowCycle() {
   }, 1600);
 }
 
+function startQuoteRotation(immediate = true) {
+  // don't start if already running
+  if (quoteInterval !== null) return;
+
+  // optionally show a quote immediately
+  if (immediate) displayRandomQuote(false);
+
+  // create the interval and store its id so we can clear it later
+  quoteInterval = setInterval(() => {
+    displayRandomQuote();
+  }, QUOTE_ROTATE_MS);
+}
+
+function stopQuoteRotation() {
+  if (quoteInterval !== null) {
+    clearInterval(quoteInterval);
+    quoteInterval = null;
+  }
+}
+
 // Start countdown — robust, uses target time
 function startCountdown() {
   const DURATION_SECONDS = 20;
@@ -263,16 +285,21 @@ function finishUnlock() {
 unlockBtn.addEventListener('click', startCountdown);
 cancelBtn.addEventListener('click', cancelCountdown);
 
-// when the PWA is foregrounded, update the last unlock variable
+// visibility handler: update UI immediately, and start/stop rotation
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     updateDisplay();
-    // change quote peridocially
-    setInterval(() => {
-        displayRandomQuote()
-    }, 10000);
+    startQuoteRotation(true); // immediate change + start periodic interval
+  } else {
+    // page hidden -> pause rotation to save CPU/battery
+    stopQuoteRotation();
   }
 });
+
+// start rotation on initial load if the page is visible already
+if (document.visibilityState === 'visible') {
+  startQuoteRotation(true);
+}
 
 // Clean up on unload
 window.addEventListener('beforeunload', () => {
