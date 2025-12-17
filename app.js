@@ -2,14 +2,12 @@ const quotes = [
   "What is something better you could do now?",
   "Are you aware why you're checking your phone?",
   "Is it truly important to check things again?",
-  "Could you step outside and take a breath instead?",
-  "What are you avoiding by reaching for your phone?",
-  "Will this bring you closer to your goals today?",
+  "Could you read, meditate or create something?",
+  "Will this bring you closer to your life goals?",
   "Is this the most meaningful thing you could do right now?",
-  "What would happen if you waited five more minutes?",
+  "Do you need to be available constantly?",
   "What emotion are you feeling right now?",
   "Could you be present in this moment instead?",
-  "What if you chose presence over mindless consumption?"
 ];
 
 // --- interval / timer handles ---
@@ -283,6 +281,7 @@ function finishUnlock() {
 function handleVisibilityChange() {
   if (document.visibilityState === 'visible') {
     console.log('visibility: visible');
+    checkAndResetDaily(); // reset to 0 if it's a new day
     updateDisplay();
     startQuoteRotation(true);
     startGlowCycle();
