@@ -1,3 +1,81 @@
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+// supabase client initialisation
+const SUPABASE_URL = 'https://satbngxkoaomtijvhjfs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNhdGJuZ3hrb2FvbXRpanZoamZzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYwMzQ2NTgsImV4cCI6MjA4MTYxMDY1OH0.Fnzen6KNHhl18-WNINajgWrD_Un5OOlc2n-BmYc4Qv8';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// UI refs
+const out = document.getElementById('output');
+const googleBtn = document.getElementById('google-btn');
+const checkUserBtn = document.getElementById('check-user-btn');
+const signoutBtn = document.getElementById('signout-btn');
+
+function log(...args) {
+  console.log(...args);
+  out.textContent += args.map(a => (typeof a === 'string' ? a : JSON.stringify(a, null, 2))).join(' ') + '\n';
+}
+
+// ------------- OAuth redirect handling -------------
+async function handleOAuthRedirectIfNeeded() {
+  // This reads the redirect parameters and stores the session.
+  // Call it immediately on page load.
+  try {
+    const { data, error } = await supabase.auth.getSessionFromUrl({ storeSession: true });
+    if (error) {
+      log('getSessionFromUrl error:', error.message || error);
+      return;
+    }
+    if (data) {
+      log('OAuth redirect completed. session:', data.session);
+      // Optionally fetch user
+      const { data: userData } = await supabase.auth.getUser();
+      log('Signed in user:', userData?.user);
+    } else {
+      log('No OAuth redirect present.');
+    }
+  } catch (err) {
+    console.error(err);
+    log('Exception during getSessionFromUrl:', err.message || err);
+  }
+}
+
+// Call immediately on load
+handleOAuthRedirectIfNeeded();
+
+// ------------- Auth state listener -------------
+supabase.auth.onAuthStateChange((event, session) => {
+  log('Auth event:', event);
+  if (session) log('Session:', session);
+});
+
+// ------------- Button actions -------------
+googleBtn.addEventListener('click', async () => {
+  log('Starting Google OAuth flow (redirect) ...');
+  // Note: this will redirect the browser to Google's consent screen
+  await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin } // optional; defaults to origin
+  });
+  // When the user completes sign-in, they'll be redirected back to Supabase -> then back here
+});
+
+checkUserBtn.addEventListener('click', async () => {
+  const { data, error } = await supabase.auth.getUser();
+  if (error) {
+    log('getUser error:', error);
+    return;
+  }
+  log('Current user:', data?.user || 'no user');
+});
+
+signoutBtn.addEventListener('click', async () => {
+  await supabase.auth.signOut();
+  log('Signed out.');
+});
+
+
 const quotes = [
   "What is something better you could do now?",
   "Are you aware why you're checking your phone?",
